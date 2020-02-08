@@ -2,6 +2,7 @@
     "python.pythonPath": "virtualenv/bin/python",
     "python.linting.enabled": true,
     "python.linting.pylintEnabled": true,
+    "python.linting.pylintArgs": ["--load-plugins", "pylint_django"],
     "python.autoComplete.addBrackets": true,
     "python.testing.unittestArgs": [
         "-v",
@@ -12,5 +13,6 @@
     ],
     "python.testing.pytestEnabled": false,
     "python.testing.nosetestsEnabled": false,
-    "python.testing.unittestEnabled": true
+    "python.testing.unittestEnabled": true,
+    "python.linting.flake8Enabled": false
 }
