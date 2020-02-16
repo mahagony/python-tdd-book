@@ -20,7 +20,7 @@ class SendLoginEmailViewTest(TestCase):
         self.assertTrue(mock_send_mail, True)
         (subject, body, from_email, to_list), kwargs = mock_send_mail.call_args # pylint: disable=unused-variable
         self.assertEqual(subject, 'Your login link for Superlists')
-        self.assertEqual(from_email, 'mahagony@neuf.fr')
+        self.assertEqual(from_email, 'noreply@superlists.mahagony4.me')
         self.assertEqual(to_list, ['edith@example.com'])
 
     def test_adds_success_message(self):

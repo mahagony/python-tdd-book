@@ -1,3 +1,4 @@
+import os
 import random
 from fabric.contrib.files import append, exists
 from fabric.api import cd, env, local, run
@@ -7,7 +8,7 @@ REPO_URL = 'https://github.com/mahagony/python-tdd-book.git'
 def deploy():
     site_folder = f'/sites/{env.host}'
     run(f'mkdir -p {site_folder}')
-    with cd(site_folder):
+    with cd(site_folder):       # pylint: disable=not-context-manager
         _get_latest_source()
         _update_virtualenv()
         _create_or_update_dotenv()
@@ -34,6 +35,8 @@ def _create_or_update_dotenv():
     if 'DJANGO_SECRET_KEY' not in current_contents:
         new_secret = ''.join(random.SystemRandom().choices('abcdefghijklmnopqrstuvwxyz0123456789', k=50))
         append('.env', f'DJANGO_SECRET_KEY={new_secret}')
+    email_password = os.environ['EMAIL_PASSWORD']
+    append('.env', f'EMAIL_PASSWORD={email_password}')
 
 def _update_static_files():
     run('./virtualenv/bin/python manage.py collectstatic --noinput')
