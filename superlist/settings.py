@@ -123,8 +123,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
-EMAIL_HOST = 'smtp-auth.sfr.fr'
-EMAIL_HOST_USER = 'mahagony@neuf.fr'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'mahagony401@gmail.com'
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_PASSWORD')
-EMAIL_PORT = 465
-EMAIL_USE_SSL = True
+EMAIL_USE_TLS = True
