@@ -22,10 +22,6 @@ class ItemForm(forms.models.ModelForm):
             },
         }
 
-    def save(self, for_list): # pylint: disable=arguments-differ
-        self.instance.list = for_list
-        return super().save()
-
 class NewListForm(ItemForm):
 
     def save(self, owner):  # pylint: disable=arguments-differ
@@ -46,6 +42,3 @@ class ExistingListItemForm(ItemForm):
         except ValidationError as err:
             err.error_dict = {'text': [DUPLICATE_ITEM_ERROR]}
             self._update_errors(err)
-
-    def save(self): # pylint: disable=arguments-differ
-        return forms.models.ModelForm.save(self)
