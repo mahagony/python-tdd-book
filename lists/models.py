@@ -10,7 +10,7 @@ class List(models.Model):
 
     @property
     def name(self):
-        return self.item_set.first()
+        return self.item_set.first().text
 
 class Item(models.Model):
     text = models.TextField(default='')
