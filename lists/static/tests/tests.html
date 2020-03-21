@@ -9,9 +9,14 @@
     <body>
         <div id="qunit"></div>
         <div id="qunit-fixture">
-            <form>
+            <form id="id_item_form">
                 <input name="text" />
-                <div class="has-error">Error text</div>
+                <input type="hidden" name="csrfmiddlewaretoken" value="tokey" />
+                <div class="has-error">
+                    <div class="help-block">
+                        Error text
+                    </div>
+                </div>
             </form>
             <table id="id_list_table"></table>
         </div>
@@ -74,6 +79,23 @@
                 assert.equal(row2.text(), '2: item 2 text');
             });
 
+            QUnit.test("should intercept form submit and do ajax post", function (assert) {
+                var url = '/listitemsapi/';
+                window.Superlists.initialize(url);
+
+                $('#id_item_form input[name="text"]').val('user input');
+                $('#id_item_form input[name="csrfmiddlewaretoken"]').val('tokeney');
+                $('#id_item_form').submit();
+
+                assert.equal(server.requests.length, 2);
+                var request = server.requests[1];
+                assert.equal(request.url, url);
+                assert.equal(request.method, "POST");
+                assert.equal(
+                    request.requestBody,
+                    'text=user+input&csrfmiddlewaretoken=tokeney'
+                );
+            });
         </script>
     </body>
 </html>
