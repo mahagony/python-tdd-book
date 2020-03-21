@@ -79,10 +79,13 @@
 
         <script src="/static/jquery-3.1.1.min.js"></script>
         <script src="/static/list.js"></script>
+
+        {% block scripts %}
         <script>
             $(document).ready(function () {
                 window.Superlists.initialize();
             });
         </script>
+        {% endblock scripts %}
     </body>
 </html>
