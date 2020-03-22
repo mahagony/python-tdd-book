@@ -1,5 +1,6 @@
 import json
 from django.test import TestCase
+from django.core.urlresolvers import reverse
 
 from lists.models import List, Item
 from lists.forms import DUPLICATE_ITEM_ERROR, EMPTY_ITEM_ERROR
@@ -22,17 +23,20 @@ class ListAPITest(TestCase):
         response = self.client.get(self.base_url.format(our_list.id))
         self.assertEqual(
             json.loads(response.content.decode('utf8')),
-            [
-                {'id': item1.id, 'text': item1.text},
-                {'id': item2.id, 'text': item2.text},
-            ]
+            {'id': our_list.id, 'items': [
+                {'id': item1.id, 'list': our_list.id, 'text': item1.text},
+                {'id': item2.id, 'list': our_list.id, 'text': item2.text},
+            ]}
         )
+
+class ItemsAPITest(TestCase):
+    base_url = reverse('item-list')
 
     def test_posting_a_new_item(self):
         list_ = List.objects.create()
         response = self.client.post(
-            self.base_url.format(list_.id),
-            {'text': 'new item'},
+            self.base_url,
+            {'list': list_.id, 'text': 'new item'},
         )
         self.assertEqual(response.status_code, 201)
         new_item = list_.item_set.get()
@@ -51,15 +55,15 @@ class ListAPITest(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
             json.loads(response.content.decode('utf8')),
-            {'error': EMPTY_ITEM_ERROR},
+            {'text': [EMPTY_ITEM_ERROR]},
         )
 
     def test_duplicate_items_error(self):
         list_ = List.objects.create()
-        self.client.post(self.base_url.format(list_.id), data={'text': 'thing'})
-        response = self.client.post(self.base_url.format(list_.id), data={'text': 'thing'})
+        self.client.post(self.base_url.format(list_.id), data={'list': list_.id, 'text': 'thing'})
+        response = self.client.post(self.base_url.format(list_.id), data={'list': list_.id, 'text': 'thing'})
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
             json.loads(response.content.decode('utf8')),
-            {'error': DUPLICATE_ITEM_ERROR},
+            {'non_field_errors': [DUPLICATE_ITEM_ERROR]},
         )
