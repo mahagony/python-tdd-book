@@ -27,27 +27,20 @@ class ListViewTest(TestCase):
         response = self.client.get(f'/lists/{list_.id}/')
         self.assertTemplateUsed(response, 'list.html')
 
-    def test_displays_only_items_for_that_list(self):
-        correct_list = List.objects.create()
-        Item.objects.create(text='itemey 1', list=correct_list)
-        Item.objects.create(text='itemey 2', list=correct_list)
-        other_list = List.objects.create()
-        Item.objects.create(text='other list item 1', list=other_list)
-        Item.objects.create(text='other list item 2', list=other_list)
-
-        response = self.client.get(f'/lists/{correct_list.id}/')
-
-        self.assertContains(response, 'itemey 1')
-        self.assertContains(response, 'itemey 2')
-        self.assertNotContains(response, 'other list item 1')
-        self.assertNotContains(response, 'other list item 2')
-
     def test_passes_correct_list_to_template(self):
+        List.objects.create()
+        correct_list = List.objects.create()
+        response = self.client.get(f'/lists/{correct_list.id}/')
+        self.assertEqual(response.context['list'], correct_list)
+
+    def test_displays_item_form(self):
         list_ = List.objects.create()
         response = self.client.get(f'/lists/{list_.id}/')
-        self.assertEqual(response.context['list'], list_)
+        self.assertIsInstance(response.context['form'], ExistingListItemForm)
+        self.assertContains(response, 'name="text"')
 
     def test_can_save_a_POST_request_to_an_existing_list(self): # pylint: disable=invalid-name
+        List.objects.create()
         correct_list = List.objects.create()
 
         self.client.post(
@@ -61,6 +54,7 @@ class ListViewTest(TestCase):
         self.assertEqual(new_item.list, correct_list)
 
     def test_POST_redirects_to_list_view(self): # pylint: disable=invalid-name
+        List.objects.create()
         correct_list = List.objects.create()
 
         response = self.client.post(
@@ -68,12 +62,6 @@ class ListViewTest(TestCase):
             data={'text': 'A new item for an existing list'}
         )
         self.assertRedirects(response, f'/lists/{correct_list.id}/')
-
-    def test_displays_item_form(self):
-        list_ = List.objects.create()
-        response = self.client.get(f'/lists/{list_.id}/')
-        self.assertIsInstance(response.context['form'], ExistingListItemForm)
-        self.assertContains(response, 'name="text"')
 
     def post_invalid_input(self):
         list_ = List.objects.create()
@@ -143,6 +131,12 @@ class NewListViewUnitTest(unittest.TestCase):
         new_list(self.request)
         mock_form.save.assert_called_once_with(owner=self.request.user)
 
+    def test_does_not_save_if_form_invalid(self, mockNewListForm):      # pylint: disable=invalid-name
+        mock_form = mockNewListForm.return_value
+        mock_form.is_valid.return_value = False
+        new_list(self.request)
+        self.assertFalse(mock_form.save.called)
+
     @patch('lists.views.redirect')
     def test_redirects_to_form_returned_object_if_form_valid(self, mock_redirect, mockNewListForm): # pylint: disable=invalid-name
         mock_form = mockNewListForm.return_value
@@ -162,12 +156,6 @@ class NewListViewUnitTest(unittest.TestCase):
 
         self.assertEqual(response, mock_render.return_value)
         mock_render.assert_called_once_with(self.request, 'home.html', {'form': mock_form})
-
-    def test_does_not_save_if_form_invalid(self, mockNewListForm):  # pylint: disable=invalid-name
-        mock_form = mockNewListForm.return_value
-        mock_form.is_valid.return_value = False
-        new_list(self.request)
-        self.assertFalse(mock_form.save.called)
 
 class MyListsTest(TestCase):
 
